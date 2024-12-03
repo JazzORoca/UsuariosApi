@@ -30,12 +30,13 @@ namespace UsuariosApi.Controllers
             return Ok(users);
         }
 
+
         [HttpPost]
-        public async Task<IActionResult> AddUser([FromBody] User user)
+        public async Task<IActionResult> AddUser([FromBody] User user, [FromQuery] string password)
         {
             try
             {
-                await _userService.AddUserAsync(user);
+                await _userService.AddUserAsync(user, password);
                 return CreatedAtAction(nameof(GetUserByEmail), new { email = user.Email }, user);
             }
             catch (Exception ex)
@@ -43,6 +44,14 @@ namespace UsuariosApi.Controllers
                 return BadRequest(ex.Message);
             }
         }
+        [HttpPost("verify-password")]
+        public async Task<IActionResult> VerifyPassword([FromQuery] string email, [FromQuery] string password)
+        {
+            var isValid = await _userService.VerifyPasswordAsync(email, password);
+            return isValid ? Ok("Password is correct") : Unauthorized("Invalid credentials");
+        }
+
+
 
         [HttpPut("{email}")]
         public async Task<IActionResult> UpdateUser(string email, [FromBody] User user)
